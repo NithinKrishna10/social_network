@@ -38,7 +38,7 @@ This project is a social networking API built using Django Rest Framework (DRF).
  
 1. **Clone the repository**:
     ```bash
-git clone https://github.com/yourusername/social-network-api.git
+git clone https://github.com/NithinKrishna10/social_network.git
     cd social-network-api
     ```
  
