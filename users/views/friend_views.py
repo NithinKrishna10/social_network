@@ -1,21 +1,28 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
-from django.utils import timezone
-from datetime import timedelta
+from drf_yasg.utils import swagger_auto_schema
+
+
 from ..models import CustomUser, FriendRequest
 from ..serializers.friend_serializers import FriendRequestSerializer, UserSerializer
+from ..serializers.request_serializers import SendFriendRequestSerializer, RespondFriendRequestSerializer
 from ..utils import api_response
 
 class SendFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        request_body=SendFriendRequestSerializer,
+    )
     def post(self, request):
         to_user_id = request.data.get('to_user_id')
         
         if not to_user_id:
             return api_response(success=False, message="Recipient user ID is required", status=400)
-        
         try:
             to_user = CustomUser.objects.get(id=to_user_id)
         except CustomUser.DoesNotExist:
@@ -38,7 +45,8 @@ class SendFriendRequestView(APIView):
 
 class RespondFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @swagger_auto_schema(
+        request_body=RespondFriendRequestSerializer)
     def post(self, request, pk):
         try:
             friend_request = FriendRequest.objects.get(pk=pk, to_user=request.user)

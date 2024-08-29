@@ -1,5 +1,8 @@
-from rest_framework import generics
 from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics
+from drf_yasg import openapi
+
 from ..models import CustomUser
 from ..serializers.friend_serializers import UserSerializer
 from ..utils import api_response
@@ -8,6 +11,17 @@ class SearchUserView(generics.ListAPIView):
     serializer_class = UserSerializer
     queryset = CustomUser.objects.all()
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'q',
+                openapi.IN_QUERY,
+                description="Search users by email or name",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
+    )
     def get_queryset(self):
         query = self.request.query_params.get('q', '')
         if '@' in query:

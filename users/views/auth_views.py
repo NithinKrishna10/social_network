@@ -5,14 +5,20 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_yasg.utils import swagger_auto_schema
+
 
 from ..models import CustomUser
-from ..serializers.auth_serializers import SignupSerializer
+from ..serializers.request_serializers import LoginRequestSerializer, SignupRequestSerializer
 from ..utils import api_response
+
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        request_body=SignupRequestSerializer
+    )
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -30,7 +36,8 @@ class SignupView(APIView):
             return api_response(success=False, message="Password must be at least 8 characters long", status=400)
 
         try:
-            user = CustomUser.objects.create_user(email=email, username=email, password=password)
+            user = CustomUser.objects.create_user(
+                email=email, username=email, password=password)
             refresh = RefreshToken.for_user(user)
             tokens = {
                 'refresh': str(refresh),
@@ -44,9 +51,11 @@ class SignupView(APIView):
         except Exception as e:
             return api_response(success=False, message=f"An error occurred: {str(e)}", status=500)
 
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
+    
+    @swagger_auto_schema(request_body=LoginRequestSerializer)
     def post(self, request):
         email = request.data.get('email').lower()
         password = request.data.get('password')
