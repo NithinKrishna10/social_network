@@ -1,12 +1,14 @@
 from django.urls import path
-from .views import SignupView, CustomAuthToken, UserSearchView, SendFriendRequestView, RespondFriendRequestView, FriendListView, PendingFriendRequestsView
+from .views.auth_views import SignupView, LoginView
+from .views.search_views import SearchUserView
+from .views.friend_views import SendFriendRequestView, RespondFriendRequestView, ListFriendsView, ListPendingRequestsView
 
 urlpatterns = [
     path('signup/', SignupView.as_view(), name='signup'),
-    path('login/', CustomAuthToken.as_view(), name='login'),
-    path('search/', UserSearchView.as_view(), name='user-search'),
-    path('send-request/', SendFriendRequestView.as_view(), name='send-friend-request'),
-    path('respond-request/', RespondFriendRequestView.as_view(), name='respond-friend-request'),
-    path('friends/', FriendListView.as_view(), name='friend-list'),
-    path('pending-requests/', PendingFriendRequestsView.as_view(), name='pending-requests'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('search/', SearchUserView.as_view(), name='search_users'),
+    path('friend-request/send/', SendFriendRequestView.as_view(), name='send_friend_request'),
+    path('friend-request/respond/<int:pk>/', RespondFriendRequestView.as_view(), name='respond_friend_request'),
+    path('friends/', ListFriendsView.as_view(), name='list_friends'),
+    path('friend-requests/pending/', ListPendingRequestsView.as_view(), name='list_pending_requests'),
 ]
