@@ -23,12 +23,17 @@ class SendFriendRequestView(APIView):
         
         if not to_user_id:
             return api_response(success=False, message="Recipient user ID is required", status=400)
+        
+        
         try:
             to_user = CustomUser.objects.get(id=to_user_id)
         except CustomUser.DoesNotExist:
             return api_response(success=False, message="Recipient user not found", status=404)
 
         from_user = request.user
+        
+        if from_user == to_user:
+            return api_response(success=False, message="You cannot send a friend request to yourself", status=400)
 
         if FriendRequest.objects.filter(from_user=from_user, to_user=to_user).exists():
             return api_response(success=False, message="Friend request already sent", status=400)
@@ -61,7 +66,7 @@ class RespondFriendRequestView(APIView):
         try:
             friend_request.status = status_
             friend_request.save()
-            return api_response(success=True, message=f"Friend request {status}", data=FriendRequestSerializer(friend_request).data)
+            return api_response(success=True, message=f"Friend request {status_}", data=FriendRequestSerializer(friend_request).data)
         except Exception as e:
             return api_response(success=False, message=f"An error occurred: {str(e)}", status=500)
 
@@ -89,7 +94,7 @@ class ListPendingRequestsView(generics.ListAPIView):
     serializer_class = FriendRequestSerializer
 
     def get_queryset(self):
-        return FriendRequest.objects.filter(from_user=self.request.user, status='pending')
+        return FriendRequest.objects.filter(to_user=self.request.user, status='pending')
 
     def list(self, request, *args, **kwargs):
         try:
