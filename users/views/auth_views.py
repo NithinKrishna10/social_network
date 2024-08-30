@@ -40,6 +40,8 @@ class SignupView(APIView):
                 email=email, username=email, password=password)
             refresh = RefreshToken.for_user(user)
             tokens = {
+                'id' : user.id,
+                'username': user.username,
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
@@ -63,6 +65,8 @@ class LoginView(APIView):
         if user is not None:
             refresh = RefreshToken.for_user(user)
             tokens = {
+                'id' : user.id,
+                'username': user.username,
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
