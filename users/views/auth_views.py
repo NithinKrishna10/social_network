@@ -7,68 +7,88 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
 
-
 from ..models import CustomUser
-from ..serializers.request_serializers import LoginRequestSerializer, SignupRequestSerializer
+from ..serializers.request_serializers import (
+    LoginRequestSerializer,
+    SignupRequestSerializer,
+)
 from ..utils import api_response
 
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        request_body=SignupRequestSerializer
-    )
+    @swagger_auto_schema(request_body=SignupRequestSerializer)
     def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
+        email = request.data.get("email")
+        password = request.data.get("password")
 
         if not email or not password:
-            return api_response(success=False, message="Email and password are required", status=400)
+            return api_response(
+                success=False, message="Email and password are required", status=400
+            )
 
         try:
             email = email.lower()
             validate_email(email)
         except ValidationError:
-            return api_response(success=False, message="Invalid email format", status=400)
+            return api_response(
+                success=False, message="Invalid email format", status=400
+            )
 
         if len(password) < 8:
-            return api_response(success=False, message="Password must be at least 8 characters long", status=400)
+            return api_response(
+                success=False,
+                message="Password must be at least 8 characters long",
+                status=400,
+            )
 
         try:
             user = CustomUser.objects.create_user(
-                email=email, username=email, password=password)
+                email=email, username=email, password=password
+            )
             refresh = RefreshToken.for_user(user)
             tokens = {
-                'id' : user.id,
-                'username': user.username,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                "id": user.id,
+                "username": user.username,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
             }
-            return api_response(success=True, message="User signed up successfully", data=tokens, status=201)
+            return api_response(
+                success=True,
+                message="User signed up successfully",
+                data=tokens,
+                status=201,
+            )
 
         except IntegrityError:
-            return api_response(success=False, message="User with this email already exists", status=400)
+            return api_response(
+                success=False, message="User with this email already exists", status=400
+            )
 
         except Exception as e:
-            return api_response(success=False, message=f"An error occurred: {str(e)}", status=500)
+            return api_response(
+                success=False, message=f"An error occurred: {str(e)}", status=500
+            )
 
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
-    
+
     @swagger_auto_schema(request_body=LoginRequestSerializer)
     def post(self, request):
-        email = request.data.get('email').lower()
-        password = request.data.get('password')
+        email = request.data.get("email").lower()
+        password = request.data.get("password")
         user = authenticate(username=email, password=password)
         if user is not None:
             refresh = RefreshToken.for_user(user)
             tokens = {
-                'id' : user.id,
-                'username': user.username,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                "id": user.id,
+                "username": user.username,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
             }
-            return api_response(success=True, message="Login successful", data=tokens, status=200)
+            return api_response(
+                success=True, message="Login successful", data=tokens, status=200
+            )
         return api_response(success=False, message="Invalid Credentials", status=400)
